@@ -36,25 +36,31 @@ Built with:
    cd prime-health-notes
 
 2. Install dependencies:
-   run composer install
+   ```bash
+   composer install
 
 3. Create and configure .env:
+   ```bash
    cp .env.example .env
    php artisan key:generate
 
 4. Use SQLite (already configured):
    Make sure the file database/database.sqlite exists. If not, create it:
+   ```bash
    touch database/database.sqlite
 
 5. Run migrations and seeders:
+   ```bash
    php artisan migrate --seed
 
 6. Start the backend server:
+   ```bash
    php artisan serve
 
 
 ### Frontend (Vue 3 + Tailwind)
 1. Navigate to the frontend directory (if separate), or from root:
+   ```bash
    npm install
    npm run dev
 
