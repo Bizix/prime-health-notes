@@ -2,12 +2,13 @@
   <div class="max-w-2xl mx-auto p-4">
 
     <!-- Heading -->
-    <h1 class="text-3xl font-extrabold text-gray-700 text-center mb-6 tracking-tight">
+    <h1 class="text-3xl font-extrabold text-gray-800 text-center mb-6 tracking-tight">
       Patient Notes
     </h1>
 
     <!-- Controls: Search + Summary + Add Note Toggle -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 flex-wrap">
+      <label for="search" class="sr-only">Search by title</label>
       <input
         v-model="search"
         @input="fetchNotes"
@@ -17,6 +18,7 @@
 
       <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
         <button
+        type="button"
           @click="toggleSummary"
           class="bg-blue-600 text-white px-4 py-2 rounded whitespace-nowrap w-[160px] hover:bg-blue-700 transition cursor-pointer"
         >
@@ -25,6 +27,7 @@
         </button>
 
         <button
+          type="button"
           @click="showForm = !showForm"
           class="text-sm px-4 py-2 border border-green-600 bg-white text-green-600 rounded hover:bg-green-50 transition cursor-pointer w-[160px] text-center"
         >
@@ -35,6 +38,11 @@
 
     <!-- Note Form -->
     <NoteForm v-if="showForm" @submit="addNote" />
+
+    <!-- Error message -->
+    <div v-if="error" class="text-red-500 text-sm mb-4 text-center">
+      {{ error }}
+    </div>
 
     <!-- Summary -->
     <div v-if="summary" class="mb-6 p-4 bg-white rounded border text-sm">
@@ -74,6 +82,7 @@
     current_page: 1,
     last_page: 1
   })
+  const error = ref('')
   const showForm = ref(false)
   const isLoadingNotes = ref(false)
   const isLoadingSummary = ref(false)
@@ -91,8 +100,10 @@
       notes.value = data.data
       pagination.value.current_page = data.current_page
       pagination.value.last_page = data.last_page
+      error.value = ''
     } catch (e) {
       console.error(e)
+      error.value = 'Something went wrong. Please try again.'
     } finally {
       isLoadingNotes.value = false
     }
@@ -103,12 +114,18 @@
     if (!note.title || !note.content) return
 
     isLoadingNotes.value = true
+    error.value = ''
     showForm.value = false
 
-    await axios.post(`http://localhost:8000/api/patients/${patientId}/notes`, note)
-    await fetchNotes()
-
-    isLoadingNotes.value = false
+    try {
+      await axios.post(`http://localhost:8000/api/patients/${patientId}/notes`, note)
+      await fetchNotes()
+    } catch (e) {
+      console.error(e)
+      error.value = 'Unable to add note. Please try again.'
+    } finally {
+      isLoadingNotes.value = false
+    }
   }
     
   const toggleSummary = async () => {
@@ -124,8 +141,10 @@
     try {
       const { data } = await axios.get(`http://localhost:8000/api/patients/${patientId}/notes/summary`)
       summary.value = data.summary
+      error.value = ''
     } catch (e) {
       console.error(e)
+      error.value = 'Something went wrong. Please try again.'
     } finally {
       isLoadingSummary.value = false
     }
