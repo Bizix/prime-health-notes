@@ -15,7 +15,7 @@
         class="flex-1 border px-3 py-2 rounded bg-white"
       />
 
-      <div class="flex gap-2 flex-wrap">
+      <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
         <button
           @click="toggleSummary"
           class="bg-blue-600 text-white px-4 py-2 rounded whitespace-nowrap w-[160px] hover:bg-blue-700 transition cursor-pointer"
