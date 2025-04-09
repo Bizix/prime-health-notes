@@ -16,7 +16,8 @@
         <button class="bg-green-600 text-white px-4 py-2 rounded">Add Note</button>
       </form>
   
-      <div v-if="notes.length === 0" class="text-gray-500">No notes found.</div>
+      <LoadingIndicator v-if="isLoadingNotes" message="Loading notes..." />
+      <div v-if="notes.length === 0 && !isLoadingNotes" class="text-gray-500">No notes found.</div>
   
       <div v-for="note in notes" :key="note.id" class="border p-4 rounded mb-2">
         <h2 class="font-semibold">{{ note.title }}</h2>
@@ -25,7 +26,8 @@
       </div>
   
       <button @click="generateSummary" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
-        Generate Summary
+        <LoadingIndicator v-if="isLoadingSummary" message="Loading..." />
+        <span v-else>Generate Summary</span>
       </button>
   
       <div v-if="summary" class="mt-4 p-4 bg-gray-100 rounded border">{{ summary }}</div>
@@ -35,18 +37,28 @@
   <script setup>
   import { ref } from 'vue'
   import axios from 'axios'
+  import LoadingIndicator from '../components/LoadingIndicator.vue'
   
   const patientId = 1
   const notes = ref([])
   const search = ref('')
   const summary = ref('')
   const newNote = ref({ title: '', content: '' })
+  const isLoadingNotes = ref(false)
+  const isLoadingSummary = ref(false)
   
   const fetchNotes = async () => {
-    const { data } = await axios.get(`http://localhost:8000/api/patients/${patientId}/notes`, {
-      params: { search: search.value }
-    })
-    notes.value = data
+    isLoadingNotes.value = true
+    try {
+      const { data } = await axios.get(`http://localhost:8000/api/patients/${patientId}/notes`, {
+        params: { search: search.value }
+      })
+      notes.value = data
+    } catch (e) {
+      console.error(e)
+    } finally {
+      isLoadingNotes.value = false
+    }
   }
   
   const addNote = async () => {
@@ -57,8 +69,15 @@
   }
   
   const generateSummary = async () => {
-    const { data } = await axios.get(`http://localhost:8000/api/patients/${patientId}/notes/summary`)
-    summary.value = data.summary
+    isLoadingSummary.value = true
+    try {
+      const { data } = await axios.get(`http://localhost:8000/api/patients/${patientId}/notes/summary`)
+      summary.value = data.summary
+    } catch (e) {
+      console.error(e)
+    } finally {
+      isLoadingSummary.value = false
+    }
   }
   
   fetchNotes()

@@ -7,5 +7,5 @@ import PatientNotes from './views/PatientNotes.vue'
 </script>
 
 <style scoped>
-/* Optional: Any global styles go here */
+/* Not used but just in case! */
 </style>
