@@ -9,13 +9,15 @@ class NotesController extends Controller
 {
     public function index($id, Request $request)
     {
-        $query = Patient::findOrFail($id)->notes();
-
+        $patient = Patient::findOrFail($id);
+    
+        $query = $patient->notes();
+    
         if ($search = $request->query('search')) {
             $query->where('title', 'like', "%$search%");
         }
-
-        return response()->json($query->orderBy('created_at', 'desc')->get());
+    
+        return $query->orderBy('created_at', 'desc')->paginate(5); // 👈 Set per-page limit here
     }
 
     public function store($id, Request $request)

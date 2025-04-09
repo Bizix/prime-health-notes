@@ -19,11 +19,34 @@
       <LoadingIndicator v-if="isLoadingNotes" message="Loading notes..." />
       <div v-if="notes.length === 0 && !isLoadingNotes" class="text-gray-500">No notes found.</div>
   
-      <div v-for="note in notes" :key="note.id" class="border p-4 rounded mb-2">
+      <div  v-if="!isLoadingNotes" v-for="note in notes" :key="note.id" class="border p-4 rounded mb-2">
         <h2 class="font-semibold">{{ note.title }}</h2>
         <p>{{ note.content }}</p>
         <small class="text-gray-500">{{ new Date(note.created_at).toLocaleString() }}</small>
       </div>
+
+      <div class="flex justify-center gap-2 mt-4 items-center text-sm text-gray-700">
+        <!-- Prev Button -->
+        <button
+          v-if="pagination.current_page > 1"
+          @click="fetchNotes(pagination.current_page - 1)"
+          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 transition"
+        >
+          Prev
+        </button>
+
+        <span>Page {{ pagination.current_page }} of {{ pagination.last_page }}</span>
+
+        <!-- Next Button -->
+        <button
+          v-if="pagination.current_page < pagination.last_page"
+          @click="fetchNotes(pagination.current_page + 1)"
+          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 transition"
+        >
+          Next
+        </button>
+      </div>
+
   
       <button @click="generateSummary" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
         <LoadingIndicator v-if="isLoadingSummary" message="Loading..." />
@@ -44,22 +67,33 @@
   const search = ref('')
   const summary = ref('')
   const newNote = ref({ title: '', content: '' })
+  const pagination = ref({
+    current_page: 1,
+    last_page: 1
+  })
   const isLoadingNotes = ref(false)
   const isLoadingSummary = ref(false)
   
-  const fetchNotes = async () => {
+  const fetchNotes = async (page = 1) => {
     isLoadingNotes.value = true
     try {
       const { data } = await axios.get(`http://localhost:8000/api/patients/${patientId}/notes`, {
-        params: { search: search.value }
+        params: {
+          search: search.value,
+          page
+        }
       })
-      notes.value = data
+
+      notes.value = data.data
+      pagination.value.current_page = data.current_page
+      pagination.value.last_page = data.last_page
     } catch (e) {
       console.error(e)
     } finally {
       isLoadingNotes.value = false
     }
   }
+
   
   const addNote = async () => {
     if (!newNote.value.title || !newNote.value.content) return
