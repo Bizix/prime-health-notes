@@ -34,31 +34,10 @@
     </div>
 
     <!-- Note Form -->
-    <form
-      v-if="showForm"
-      @submit.prevent="addNote"
-      class="mb-6 p-4 border rounded bg-white shadow space-y-3"
-    >
-      <input
-        v-model="newNote.title"
-        placeholder="Title"
-        class="w-full border p-2 rounded"
-      />
-      <textarea
-        v-model="newNote.content"
-        placeholder="Content"
-        class="w-full border p-2 rounded"
-      ></textarea>
-      <button
-        type="submit"
-        class="bg-green-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-green-700 transition"
-      >
-        Add Note
-      </button>
-    </form>
+    <NoteForm v-if="showForm" @submit="addNote" />
 
     <!-- Summary -->
-    <div v-if="summary" class="mb-6 p-4 bg-gray-100 rounded border text-sm">
+    <div v-if="summary" class="mb-6 p-4 bg-white rounded border text-sm">
       {{ summary }}
     </div>
 
@@ -95,12 +74,12 @@
   import axios from 'axios'
   import LoadingIndicator from '../components/LoadingIndicator.vue'
   import NoteCard from '../components/NoteCard.vue'
+  import NoteForm from '../components/NoteForm.vue'
   
   const patientId = 1
   const notes = ref([])
   const search = ref('')
   const summary = ref('')
-  const newNote = ref({ title: '', content: '' })
   const pagination = ref({
     current_page: 1,
     last_page: 1
@@ -130,13 +109,18 @@
   }
 
   
-  const addNote = async () => {
-    if (!newNote.value.title || !newNote.value.content) return
-    await axios.post(`http://localhost:8000/api/patients/${patientId}/notes`, newNote.value)
-    newNote.value = { title: '', content: '' }
-    fetchNotes()
+  const addNote = async (note) => {
+    if (!note.title || !note.content) return
+
+    isLoadingNotes.value = true
+    showForm.value = false
+
+    await axios.post(`http://localhost:8000/api/patients/${patientId}/notes`, note)
+    await fetchNotes()
+
+    isLoadingNotes.value = false
   }
-  
+    
   const toggleSummary = async () => {
     if (summary.value) {
       summary.value = ''
