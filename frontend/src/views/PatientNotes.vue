@@ -65,10 +65,10 @@
     <!-- Notes -->
     <LoadingIndicator v-if="isLoadingNotes" message="Loading notes..." />
     <div v-if="notes.length === 0 && !isLoadingNotes" class="text-gray-500">No notes found.</div>
-    <NoteCard v-for="note in notes" :key="note.id" :note="note" />
+    <NoteCard  v-if="!isLoadingNotes" v-for="note in notes" :key="note.id" :note="note" />
 
     <!-- Pagination -->
-    <div class="flex justify-center gap-2 mt-4 items-center text-sm text-gray-700">
+    <div v-if="!isLoadingNotes" class="flex justify-center gap-2 mt-4 items-center text-sm text-gray-700">
       <button
         v-if="pagination.current_page > 1"
         @click="fetchNotes(pagination.current_page - 1)"
