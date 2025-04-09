@@ -1,61 +1,104 @@
-<!-- src/views/PatientNotes.vue -->
 <template>
-    <div class="max-w-2xl mx-auto p-4">
-      <h1 class="text-2xl font-bold mb-4">Patient Notes</h1>
-  
+  <div class="max-w-2xl mx-auto p-4">
+
+    <!-- Heading -->
+    <h1 class="text-3xl font-extrabold text-gray-700 text-center mb-6 tracking-tight">
+      Patient Notes
+    </h1>
+
+    <!-- Controls: Search + Summary + Add Note Toggle -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 flex-wrap">
       <input
         v-model="search"
         @input="fetchNotes"
         placeholder="Search by title..."
-        class="border px-2 py-1 rounded w-full mb-4"
+        class="flex-1 border px-3 py-2 rounded bg-white"
       />
-  
-      <form @submit.prevent="addNote" class="mb-4 space-y-2">
-        <input v-model="newNote.title" placeholder="Title" class="w-full border p-2 rounded" />
-        <textarea v-model="newNote.content" placeholder="Content" class="w-full border p-2 rounded"></textarea>
-        <button class="bg-green-600 text-white px-4 py-2 rounded">Add Note</button>
-      </form>
-  
-      <LoadingIndicator v-if="isLoadingNotes" message="Loading notes..." />
-      <div v-if="notes.length === 0 && !isLoadingNotes" class="text-gray-500">No notes found.</div>
-  
-      <div  v-if="!isLoadingNotes" v-for="note in notes" :key="note.id" class="border p-4 rounded mb-2">
-        <h2 class="font-semibold">{{ note.title }}</h2>
-        <p>{{ note.content }}</p>
-        <small class="text-gray-500">{{ new Date(note.created_at).toLocaleString() }}</small>
-      </div>
 
-      <div class="flex justify-center gap-2 mt-4 items-center text-sm text-gray-700">
-        <!-- Prev Button -->
+      <div class="flex gap-2 flex-wrap">
         <button
-          v-if="pagination.current_page > 1"
-          @click="fetchNotes(pagination.current_page - 1)"
-          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 transition"
+          @click="toggleSummary"
+          class="bg-blue-600 text-white px-4 py-2 rounded whitespace-nowrap w-[160px] hover:bg-blue-700 transition cursor-pointer"
         >
-          Prev
+          <LoadingIndicator v-if="isLoadingSummary" message="Loading..." />
+          <span v-else>{{ summary ? 'Hide Summary' : 'Generate Summary' }}</span>
         </button>
 
-        <span>Page {{ pagination.current_page }} of {{ pagination.last_page }}</span>
-
-        <!-- Next Button -->
         <button
-          v-if="pagination.current_page < pagination.last_page"
-          @click="fetchNotes(pagination.current_page + 1)"
-          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 transition"
+          @click="showForm = !showForm"
+          class="text-sm px-4 py-2 border border-green-600 bg-white text-green-600 rounded hover:bg-green-50 transition cursor-pointer w-[160px] text-center"
         >
-          Next
+          {{ showForm ? 'Hide Note Form' : 'Add a New Note' }}
         </button>
       </div>
-
-  
-      <button @click="generateSummary" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
-        <LoadingIndicator v-if="isLoadingSummary" message="Loading..." />
-        <span v-else>Generate Summary</span>
-      </button>
-  
-      <div v-if="summary" class="mt-4 p-4 bg-gray-100 rounded border">{{ summary }}</div>
     </div>
-  </template>
+
+    <!-- Note Form -->
+    <form
+      v-if="showForm"
+      @submit.prevent="addNote"
+      class="mb-6 p-4 border rounded bg-white shadow space-y-3"
+    >
+      <input
+        v-model="newNote.title"
+        placeholder="Title"
+        class="w-full border p-2 rounded"
+      />
+      <textarea
+        v-model="newNote.content"
+        placeholder="Content"
+        class="w-full border p-2 rounded"
+      ></textarea>
+      <button
+        type="submit"
+        class="bg-green-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-green-700 transition"
+      >
+        Add Note
+      </button>
+    </form>
+
+    <!-- Summary -->
+    <div v-if="summary" class="mb-6 p-4 bg-gray-100 rounded border text-sm">
+      {{ summary }}
+    </div>
+
+    <!-- Notes -->
+    <LoadingIndicator v-if="isLoadingNotes" message="Loading notes..." />
+    <div v-if="notes.length === 0 && !isLoadingNotes" class="text-gray-500">No notes found.</div>
+
+    <div
+      v-if="!isLoadingNotes"
+      v-for="note in notes"
+      :key="note.id"
+      class="border p-4 rounded mb-4 shadow-sm bg-white"
+    >
+      <h2 class="font-semibold text-lg mb-1">{{ note.title }}</h2>
+      <p class="mb-2 text-sm">{{ note.content }}</p>
+      <small class="text-gray-500 text-xs">{{ new Date(note.created_at).toLocaleString() }}</small>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center gap-2 mt-4 items-center text-sm text-gray-700">
+      <button
+        v-if="pagination.current_page > 1"
+        @click="fetchNotes(pagination.current_page - 1)"
+        class="px-3 py-1 rounded bg-gray-200 cursor-pointer hover:bg-gray-300 transition"
+      >
+        Prev
+      </button>
+      <span>Page {{ pagination.current_page }} of {{ pagination.last_page }}</span>
+      <button
+        v-if="pagination.current_page < pagination.last_page"
+        @click="fetchNotes(pagination.current_page + 1)"
+        class="px-3 py-1 rounded bg-gray-200 cursor-pointer hover:bg-gray-300 transition"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</template>
+
+
   
   <script setup>
   import { ref } from 'vue'
@@ -71,6 +114,7 @@
     current_page: 1,
     last_page: 1
   })
+  const showForm = ref(false)
   const isLoadingNotes = ref(false)
   const isLoadingSummary = ref(false)
   
@@ -102,6 +146,14 @@
     fetchNotes()
   }
   
+  const toggleSummary = async () => {
+    if (summary.value) {
+      summary.value = ''
+    } else {
+      await generateSummary()
+    }
+  }
+
   const generateSummary = async () => {
     isLoadingSummary.value = true
     try {
