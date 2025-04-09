@@ -65,17 +65,7 @@
     <!-- Notes -->
     <LoadingIndicator v-if="isLoadingNotes" message="Loading notes..." />
     <div v-if="notes.length === 0 && !isLoadingNotes" class="text-gray-500">No notes found.</div>
-
-    <div
-      v-if="!isLoadingNotes"
-      v-for="note in notes"
-      :key="note.id"
-      class="border p-4 rounded mb-4 shadow-sm bg-white"
-    >
-      <h2 class="font-semibold text-lg mb-1">{{ note.title }}</h2>
-      <p class="mb-2 text-sm">{{ note.content }}</p>
-      <small class="text-gray-500 text-xs">{{ new Date(note.created_at).toLocaleString() }}</small>
-    </div>
+    <NoteCard v-for="note in notes" :key="note.id" :note="note" />
 
     <!-- Pagination -->
     <div class="flex justify-center gap-2 mt-4 items-center text-sm text-gray-700">
@@ -104,6 +94,7 @@
   import { ref } from 'vue'
   import axios from 'axios'
   import LoadingIndicator from '../components/LoadingIndicator.vue'
+  import NoteCard from '../components/NoteCard.vue'
   
   const patientId = 1
   const notes = ref([])
