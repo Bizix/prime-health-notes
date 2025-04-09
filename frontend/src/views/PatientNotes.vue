@@ -47,23 +47,12 @@
     <NoteCard  v-if="!isLoadingNotes" v-for="note in notes" :key="note.id" :note="note" />
 
     <!-- Pagination -->
-    <div v-if="!isLoadingNotes" class="flex justify-center gap-2 mt-4 items-center text-sm text-gray-700">
-      <button
-        v-if="pagination.current_page > 1"
-        @click="fetchNotes(pagination.current_page - 1)"
-        class="px-3 py-1 rounded bg-gray-200 cursor-pointer hover:bg-gray-300 transition"
-      >
-        Prev
-      </button>
-      <span>Page {{ pagination.current_page }} of {{ pagination.last_page }}</span>
-      <button
-        v-if="pagination.current_page < pagination.last_page"
-        @click="fetchNotes(pagination.current_page + 1)"
-        class="px-3 py-1 rounded bg-gray-200 cursor-pointer hover:bg-gray-300 transition"
-      >
-        Next
-      </button>
-    </div>
+    <Pagination 
+      v-if="!isLoadingNotes"
+      :currentPage="pagination.current_page"
+      :lastPage="pagination.last_page"
+      @page-change="fetchNotes"
+    />
   </div>
 </template>
 
@@ -75,6 +64,7 @@
   import LoadingIndicator from '../components/LoadingIndicator.vue'
   import NoteCard from '../components/NoteCard.vue'
   import NoteForm from '../components/NoteForm.vue'
+  import Pagination from '../components/Pagination.vue'
   
   const patientId = 1
   const notes = ref([])
