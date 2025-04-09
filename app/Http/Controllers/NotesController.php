@@ -2,44 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Patient;
 use Illuminate\Http\Request;
+use App\Services\NoteService;
 
 class NotesController extends Controller
 {
+    protected $noteService;
+
+    public function __construct(NoteService $noteService)
+    {
+        $this->noteService = $noteService;
+    }
+
     public function index($id, Request $request)
     {
-        $patient = Patient::findOrFail($id);
-    
-        $query = $patient->notes();
-    
-        if ($search = $request->query('search')) {
-            $query->where('title', 'like', "%$search%");
-        }
-    
-        return $query->orderBy('created_at', 'desc')->paginate(5); // 👈 Set per-page limit here
+        return $this->noteService->getPatientNotes($id, $request);
     }
 
     public function store($id, Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
         ]);
 
-        $note = Patient::findOrFail($id)->notes()->create([
-            'title' => $request->title,
-            'content' => $request->content,
-        ]);
+        $note = $this->noteService->createNoteForPatient($id, $validated);
 
         return response()->json($note, 201);
     }
 
     public function summary($id)
     {
-        // Bonus: mock summary
-        return response()->json([
-            'summary' => 'This is a mock summary of all patient notes.'
-        ]);
+        $summary = $this->noteService->getSummary($id);
+        return response()->json(['summary' => $summary]);
     }
 }
