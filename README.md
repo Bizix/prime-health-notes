@@ -80,9 +80,17 @@ While this project is intended for demo purposes and does not include real patie
 
 
 ### Frontend (Vue 3 + Tailwind)
-1. **Navigate to the frontend directory (if separate), or from root**
+
+1. **Navigate to the frontend directory**
+   ```bash
+   cd frontend
+
+2. **Install Dependencies**
    ```bash
    npm install
+
+3. **Start the Vue dev server**
+   ```bash
    npm run dev
 
 ### Tech Highlights
